@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       server_name:
-        description: '区服名称-必须（必须是英文字母！例如 Bilibili，台服和外服请使用XAPK AzurLane JMBQ Build Work）'
+        description: 'Bilibili'
         required: true
         type: string
         default: ''
