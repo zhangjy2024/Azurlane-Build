@@ -8,7 +8,7 @@ on:
         type: string
         default: ''
       download_url:
-        description: 'APK下载链接（只能填入直链，最好使用国外云盘的直链，例如Google云盘）'
+        description: 'https://tmp-hd106.vx-cdn.com/file-69ffe33988db9-69ffeb88668be/blhx_9.7.10_0407_20260422_115059_a875e%20%281%29.apk'
         required: true
         type: string
         default: ''
