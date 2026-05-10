@@ -20,61 +20,32 @@ jobs:
       contents: write
 
     steps:
-      # 步骤1：检出仓库代码
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 步骤2：设置 Java JDK
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
           java-version: "18"
           distribution: "adopt"
 
-      # 步骤3：设置 Android SDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
 
-      # 步骤4：安装 build-tools
       - name: Install build-tools
         run: |
           yes | sdkmanager --install "build-tools;35.0.0"
       
-      # 步骤5：执行构建流程
       - name: Build APK
         run: |
           chmod +x merge_build.sh
           ./merge_build.sh "${{ github.event.inputs.server_name }}" "${{ github.event.inputs.download_url }}"
 
-      # 步骤6：创建 Release 并上传所有分卷文件（修复变量未定义问题）
-      - name: Release and Upload Assets
-        uses: ncipollo/release-action@v1
-        with:
-          tag: "${{ github.event.inputs.server_name }}-$(date +%Y%m%d)-APK"  # 用服务器名+日期做标签，避免重复
-          name: "AzurLane JMBQ ${{ github.event.inputs.server_name }} Build APK $(date +%Y%m%d)"
-          artifacts: "*.7z.*"  # 匹配所有7z分卷文件，若没有则不会上传
-          allowUpdates: true
-          body: |
-            <details>
-              <summary>中文安装说明 - 点击展开</summary>
-                1. 在下方列表中找到你需要的版本前缀，下载该服务器名称前缀的所有以 7z.00* 结尾的文件</br>
-                2. 解压时只需要选择"XXX.7z.001"解压即可</br>
-                3. 在解压后的文件夹中找到apk文件并安装
-            </details>
-            
-            <details>
-              <summary>English Installation Instructions - Click to expand</summary>
-                1. Find the version prefix you need in the list below, and download all files ending with 7z.00* that have that server name prefix</br>
-                2. When extracting, simply select the "XXX.7z.001" file to decompress</br>
-                3. Find the APK file in the extracted folder and install it
-            </details>
-
-      # 步骤7：上传APK作为Artifacts（核心修复：缩进+格式）
+      # 先只保留上传Artifacts的步骤，Release步骤暂时去掉，避免格式错误
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AzurLane-${{ github.event.inputs.server_name }}-APK  # 文件名带服务器名，更清晰
+          name: AzurLane-${{ github.event.inputs.server_name }}-APK
           path: |
-            *.apk  # 匹配所有APK文件
-            *.7z.* # 同时上传7z分卷（可选）
-          retention-days: 90  # 文件保留90天
+            *.apk
+          retention-days: 90
