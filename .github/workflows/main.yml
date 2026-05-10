@@ -3,15 +3,15 @@ on:
   workflow_dispatch:
     inputs:
       server_name:
-        description: 'Bilibili'
+        description: '服务器名称（如Bilibili）'
         required: true
         type: string
-        default: ''
+        default: 'Bilibili'
       download_url:
-        description: 'https://tmp-hd106.vx-cdn.com/file-69ffe33988db9-69ffeb88668be/blhx_9.7.10_0407_20260422_115059_a875e%20%281%29.apk'
+        description: 'APK下载直链'
         required: true
         type: string
-        default: ''
+        default: 'https://tmp-hd106.vx-cdn.com/file-69ffe33988db9-69ffeb88668be/blhx_9.7.10_0407_20260422_115059_a875e%20%281%29.apk'
 
 jobs:
   build:
@@ -46,13 +46,13 @@ jobs:
           chmod +x merge_build.sh
           ./merge_build.sh "${{ github.event.inputs.server_name }}" "${{ github.event.inputs.download_url }}"
 
-      # 步骤6：创建 Release 并上传所有分卷文件
+      # 步骤6：创建 Release 并上传所有分卷文件（修复变量未定义问题）
       - name: Release and Upload Assets
         uses: ncipollo/release-action@v1
         with:
-          tag: "${{ env.JMBQ_VERSION }}-APK"
-          name: "AzurLane JMBQ ${{ env.JMBQ_VERSION }} Build APK"
-          artifacts: "${{ github.event.inputs.server_name }}-V.${{ env.VERSION }}.7z.*"
+          tag: "${{ github.event.inputs.server_name }}-$(date +%Y%m%d)-APK"  # 用服务器名+日期做标签，避免重复
+          name: "AzurLane JMBQ ${{ github.event.inputs.server_name }} Build APK $(date +%Y%m%d)"
+          artifacts: "*.7z.*"  # 匹配所有7z分卷文件，若没有则不会上传
           allowUpdates: true
           body: |
             <details>
@@ -68,3 +68,13 @@ jobs:
                 2. When extracting, simply select the "XXX.7z.001" file to decompress</br>
                 3. Find the APK file in the extracted folder and install it
             </details>
+
+      # 步骤7：上传APK作为Artifacts（核心修复：缩进+格式）
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AzurLane-${{ github.event.inputs.server_name }}-APK  # 文件名带服务器名，更清晰
+          path: |
+            *.apk  # 匹配所有APK文件
+            *.7z.* # 同时上传7z分卷（可选）
+          retention-days: 90  # 文件保留90天
